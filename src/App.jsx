@@ -1,23 +1,22 @@
-import { Routes, Route } from 'react-router-dom'
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/Layout';
+import HomePage from './pages/Homepage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import ProtectedRoute from './ProtectedRoute';
 
-import Layout         from './components/Layout'
-import HomePage       from './pages/HomePage'
-import LoginPage      from './pages/LoginPage'
-import RegisterPage   from './pages/RegisterPage'
-import DashboardPage  from './pages/DashboardPage'
-import ProtectedRoute from './ProtectedRoute'
-
-export default function App() {
+function App() {
   return (
     <Routes>
-      {/* Everything under "/" uses our Layout (navbar, etc.) */}
+      {/* everything under "/" gets the Layout wrapper */}
       <Route path="/" element={<Layout />}>
-        {/* Public */}
-        <Route index               element={<HomePage />} />
-        <Route path="login"        element={<LoginPage />} />
-        <Route path="register"     element={<RegisterPage />} />
+        <Route index element={<HomePage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
 
-        {/* Protected */}
+        {/* protected dashboard */}
         <Route
           path="dashboard"
           element={
@@ -28,5 +27,7 @@ export default function App() {
         />
       </Route>
     </Routes>
-  )
+  );
 }
+
+export default App;
