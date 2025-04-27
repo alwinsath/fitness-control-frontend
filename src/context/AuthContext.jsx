@@ -1,30 +1,38 @@
 // src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  // local state for whether we're logged in
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const isAuthenticated = Boolean(token);
+  // on mount, check for an existing token in storage
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) setIsAuthenticated(true);
+  }, []);
 
-  function login(newToken) {
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
-  }
+  // call this after a successful login
+  const login = (token) => {
+    localStorage.setItem('token', token);
+    setIsAuthenticated(true);
+  };
 
-  function logout() {
-    localStorage.removeItem("token");
-    setToken(null);
-  }
+  // call this to log out
+  const logout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+  };
 
   return (
-    <AuthContext.Provider value={{ token, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// custom hook for consuming
 export function useAuth() {
   return useContext(AuthContext);
 }

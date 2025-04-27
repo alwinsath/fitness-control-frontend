@@ -1,62 +1,86 @@
 // src/pages/LoginPage.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Box, Button, Input, FormControl, FormLabel, FormErrorMessage, Heading, Text } from "@chakra-ui/react";
-import { loginUser } from "../services/authService";
-import { useAuth } from "../context/AuthContext";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
-  const { login } = useAuth();
-  const nav = useNavigate();
+  const [form, setForm]   = useState({ username: '', password: '' });
+  const [error, setError] = useState('');
+  const { login }        = useAuth();
+  const navigate         = useNavigate();
 
-  const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-    setError("");
+  const handleChange = e => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    // Clear any prior error as soon as they start typing again
+    setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.username || !form.password) {
-      setError("Both fields are required");
-      return;
-    }
+
+    // clear previous error
+    setError('');
+    console.log('🔹 handleSubmit start →', form);
+
     try {
+      console.log('🔹 calling loginUser(form)…');
       const { token } = await loginUser(form);
+      console.log('🔹 loginUser returned token:', token);
+
+      // persist token in context + storage
       login(token);
-      nav("/dashboard");
-    } catch {
-      setError("Invalid credentials");
+      console.log('🔹 login(token) ran');
+
+      // redirect to dashboard
+      navigate('/dashboard');
+      console.log("🔹 navigate('/dashboard') ran");
+    } catch (err) {
+      console.error('🔸 error in handleSubmit:', err);
+      setError('Invalid credentials');
     }
   };
 
   return (
-    <Box maxW="md" mx="auto" mt={8} p={6} boxShadow="md" borderRadius="md" bg="white">
-      <Heading mb={6}>Login</Heading>
+    <div style={{ maxWidth: 360, margin: '2rem auto' }}>
+      <h1>Login</h1>
       <form onSubmit={handleSubmit} noValidate>
-        <FormControl id="username" isInvalid={!!error && !form.username} mb={4}>
-          <FormLabel>Username</FormLabel>
-          <Input name="username" value={form.username} onChange={handleChange} />
-          {!form.username && <FormErrorMessage>Username is required</FormErrorMessage>}
-        </FormControl>
+        <label style={{ display: 'block', marginBottom: 8 }}>
+          Username
+          <input
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            required
+            style={{ width: '100%', padding: 8, marginTop: 4 }}
+          />
+        </label>
 
-        <FormControl id="password" isInvalid={!!error && !form.password} mb={4}>
-          <FormLabel>Password</FormLabel>
-          <Input name="password" type="password" value={form.password} onChange={handleChange} />
-          {!form.password && <FormErrorMessage>Password is required</FormErrorMessage>}
-        </FormControl>
+        <label style={{ display: 'block', marginBottom: 8 }}>
+          Password
+          <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            style={{ width: '100%', padding: 8, marginTop: 4 }}
+          />
+        </label>
 
-        {error && (
-          <Text color="red.500" fontWeight="bold" mb={4}>
-            {error}
-          </Text>
-        )}
-
-        <Button colorScheme="teal" type="submit" width="full">
+        <button
+          type="submit"
+          style={{ padding: '0.5rem 1rem', marginTop: 12 }}
+        >
           Log In
-        </Button>
+        </button>
       </form>
-    </Box>
+
+      {error && (
+        <p style={{ color: 'red', fontWeight: 'bold', marginTop: 12 }}>
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

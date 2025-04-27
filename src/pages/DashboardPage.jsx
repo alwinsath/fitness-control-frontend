@@ -1,53 +1,132 @@
-// src/pages/DashboardPage.jsx
-import { useEffect, useState } from 'react';
-import { fetchUserWorkoutPlans } from '../services/workoutService';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import {
+  fetchUserWorkoutPlans,
+  createWorkoutPlan,
+} from "../services/workoutService";
 
 export default function DashboardPage() {
-  const [plans, setPlans] = useState([]);
-  const [error, setError] = useState('');
+  const [plans, setPlans]     = useState([]);
+  const [form, setForm]       = useState({
+    name: "",
+    description: "",
+    difficulty: "Beginner",
+    muscleGroup: "",
+    imageUrl: "",
+  });
+  const [error, setError]     = useState("");
+  const [success, setSuccess] = useState("");
 
+  // Load existing plans on mount
   useEffect(() => {
-    async function load() {
-      try {
-        const data = await fetchUserWorkoutPlans();
-        setPlans(data);
-      } catch (err) {
-        setError(err.message);
-      }
-    }
-    load();
+    loadPlans();
   }, []);
 
+  async function loadPlans() {
+    try {
+      const data = await fetchUserWorkoutPlans();
+      setPlans(data);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  // Form field change
+  function handleChange(e) {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setError("");
+    setSuccess("");
+  }
+
+  // Submit new plan
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      await createWorkoutPlan(form);
+      setSuccess("Workout plan created!");
+      setForm({
+        name: "",
+        description: "",
+        difficulty: "Beginner",
+        muscleGroup: "",
+        imageUrl: "",
+      });
+      loadPlans();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded shadow">
-        <h1 className="text-3xl font-bold mb-4">Your Workout Plans</h1>
+    <div className="page-container">
+      <h1>Your Workout Plans</h1>
 
-        {error && (
-          <p className="text-red-600 font-medium mb-4">{error}</p>
-        )}
+      {error && <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>}
+      {success && (
+        <p style={{ color: "green", fontWeight: "bold" }}>{success}</p>
+      )}
 
-        {plans.length === 0 ? (
-          <p className="text-gray-700">
-            You have no plans yet.{' '}
-            <Link to="/plans/new" className="text-blue-600 hover:underline">
-              Create one
-            </Link>.
-          </p>
-        ) : (
-          <ul className="space-y-3">
-            {plans.map(p => (
-              <li key={p.id} className="border-b pb-2">
-                <strong className="text-gray-800">{p.name}</strong>{' '}
-                <span className="text-gray-600">
-                  — {p.description || 'No description'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Name</label>
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label>Description</label>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div>
+          <label>Difficulty</label>
+          <select
+            name="difficulty"
+            value={form.difficulty}
+            onChange={handleChange}
+          >
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Muscle Group</label>
+          <input
+            name="muscleGroup"
+            value={form.muscleGroup}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit">Create Plan</button>
+      </form>
+
+      <h2>Existing Plans</h2>
+      {plans.length === 0 ? (
+        <p>You have no plans yet.</p>
+      ) : (
+        <ul>
+          {plans.map((p) => (
+            <li key={p.id}>
+              <strong>{p.name}</strong> — {p.difficulty},{" "}
+              {p.muscleGroup}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

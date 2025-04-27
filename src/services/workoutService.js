@@ -1,8 +1,6 @@
 // src/services/workoutService.js
-
 const API_BASE = "https://localhost:7145/api";
 
-// Grab the JWT from localStorage
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
   return {
@@ -11,17 +9,26 @@ function getAuthHeaders() {
   };
 }
 
-/**
- * Fetch the logged-in user’s workout plans.
- * GET /api/UserWorkoutPlans
- */
+export async function createWorkoutPlan(plan) {
+  const res = await fetch(`${API_BASE}/WorkoutPlans`, {
+    method:  "POST",
+    headers: getAuthHeaders(),
+    body:    JSON.stringify(plan),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(errText || "Create plan failed");
+  }
+  return await res.json();
+}
+
 export async function fetchUserWorkoutPlans() {
-  const res = await fetch(`${API_BASE}/UserWorkoutPlans`, {
+  const res = await fetch(`${API_BASE}/WorkoutPlans`, {
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(txt || "Could not load workout plans");
+    const errText = await res.text();
+    throw new Error(errText || "Failed to fetch plans");
   }
-  return res.json(); // expect an array of plans
+  return await res.json();
 }
