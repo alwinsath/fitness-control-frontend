@@ -1,41 +1,53 @@
-// src/components/Navbar.jsx
-import { Box, Flex, Link as ChakraLink, Button, Spacer } from "@chakra-ui/react";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link as RouterLink } from 'react-router-dom'
+import { Flex, Box, Link, Button } from '@chakra-ui/react'
+import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const { isAuthenticated, logout } = useAuth()
 
   return (
-    <Box bg="gray.100" px={6} py={3} shadow="md">
-      <Flex maxW="1200px" mx="auto" align="center">
-        <ChakraLink as={RouterLink} to="/" fontWeight="bold" fontSize="lg">
-          Home
-        </ChakraLink>
+    <Flex
+      as="nav"
+      bg="blue.600"
+      color="white"
+      align="center"
+      justify="space-between"
+      px={6}
+      py={4}
+    >
+      <Box fontSize="xl" fontWeight="bold">
+        <Link
+          as={RouterLink}
+          to={isAuthenticated ? '/dashboard' : '/'}
+          _hover={{ textDecoration: 'none' }}
+          color="white"
+        >
+          Fitness Control
+        </Link>
+      </Box>
 
-        <Spacer />
-
+      <Flex align="center">
         {!isAuthenticated ? (
           <>
-            <ChakraLink as={RouterLink} to="/login" mr={4}>
+            <Link as={RouterLink} to="/" mr={4}>
+              Home
+            </Link>
+            <Link as={RouterLink} to="/login" mr={4}>
               Login
-            </ChakraLink>
-            <ChakraLink as={RouterLink} to="/register">
-              Register
-            </ChakraLink>
+            </Link>
+            <Link as={RouterLink} to="/register">Register</Link>
           </>
         ) : (
-          <Button variant="outline" colorScheme="teal" onClick={handleLogout}>
-            Logout
-          </Button>
+          <>
+            <Link as={RouterLink} to="/dashboard" mr={4}>
+              Dashboard
+            </Link>
+            <Button size="sm" colorScheme="orange" onClick={logout}>
+              Logout
+            </Button>
+          </>
         )}
       </Flex>
-    </Box>
-  );
+    </Flex>
+  )
 }

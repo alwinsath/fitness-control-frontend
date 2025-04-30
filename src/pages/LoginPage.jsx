@@ -1,86 +1,94 @@
 // src/pages/LoginPage.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../services/authService';
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Box,
+  Heading,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Text,
+} from '@chakra-ui/react'
+import { loginUser } from '../services/authService'
+import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
-  const [form, setForm]   = useState({ username: '', password: '' });
-  const [error, setError] = useState('');
-  const { login }        = useAuth();
-  const navigate         = useNavigate();
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ username: '', password: '' })
+  const [error, setError] = useState('')
 
   const handleChange = e => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-    // Clear any prior error as soon as they start typing again
-    setError('');
-  };
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    setError('')
+  }
 
   const handleSubmit = async e => {
-    e.preventDefault();
-
-    // clear previous error
-    setError('');
-    console.log('🔹 handleSubmit start →', form);
-
+    e.preventDefault()
     try {
-      console.log('🔹 calling loginUser(form)…');
-      const { token } = await loginUser(form);
-      console.log('🔹 loginUser returned token:', token);
-
-      // persist token in context + storage
-      login(token);
-      console.log('🔹 login(token) ran');
-
-      // redirect to dashboard
-      navigate('/dashboard');
-      console.log("🔹 navigate('/dashboard') ran");
-    } catch (err) {
-      console.error('🔸 error in handleSubmit:', err);
-      setError('Invalid credentials');
+      const { token } = await loginUser(form)
+      login(token)
+      navigate('/dashboard')
+    } catch {
+      setError('Invalid credentials')
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: 360, margin: '2rem auto' }}>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit} noValidate>
-        <label style={{ display: 'block', marginBottom: 8 }}>
-          Username
-          <input
+    <Box
+      maxW="md"
+      mx="auto"
+      mt={12}
+      p={6}
+      bg="white"
+      boxShadow="lg"
+      borderRadius="md"
+    >
+      <Heading
+        as="h2"
+        size="lg"
+        mb={6}
+        textAlign="center"
+        color="orange.400"
+      >
+        Log In
+      </Heading>
+
+      <form onSubmit={handleSubmit}>
+        <FormControl id="username" mb={4} isRequired>
+          <FormLabel>Username</FormLabel>
+          <Input
             name="username"
+            placeholder="Your username"
             value={form.username}
             onChange={handleChange}
-            required
-            style={{ width: '100%', padding: 8, marginTop: 4 }}
+            bg="gray.50"
           />
-        </label>
+        </FormControl>
 
-        <label style={{ display: 'block', marginBottom: 8 }}>
-          Password
-          <input
+        <FormControl id="password" mb={4} isRequired>
+          <FormLabel>Password</FormLabel>
+          <Input
             name="password"
             type="password"
+            placeholder="••••••••"
             value={form.password}
             onChange={handleChange}
-            required
-            style={{ width: '100%', padding: 8, marginTop: 4 }}
+            bg="gray.50"
           />
-        </label>
+        </FormControl>
 
-        <button
-          type="submit"
-          style={{ padding: '0.5rem 1rem', marginTop: 12 }}
-        >
+        {error && (
+          <Text color="red.500" mb={4} textAlign="center">
+            {error}
+          </Text>
+        )}
+
+        <Button type="submit" colorScheme="orange" width="full">
           Log In
-        </button>
+        </Button>
       </form>
-
-      {error && (
-        <p style={{ color: 'red', fontWeight: 'bold', marginTop: 12 }}>
-          {error}
-        </p>
-      )}
-    </div>
-  );
+    </Box>
+  )
 }

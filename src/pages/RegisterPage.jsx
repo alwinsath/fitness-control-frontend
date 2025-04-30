@@ -1,106 +1,130 @@
 // src/pages/RegisterPage.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { registerUser } from '../services/authService';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Box,
+  Heading,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Text,
+} from '@chakra-ui/react'
+import { registerUser } from '../services/authService'
 
 export default function RegisterPage() {
-  const [form, setForm]     = useState({ username: '', email: '', password: '', dob: '' });
-  const [error, setError]   = useState('');
-  const [success, setSuccess] = useState('');
-  const navigate            = useNavigate();
+  const navigate = useNavigate()
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    dob: '',
+  })
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const handleChange = e => {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-    setError('');
-    setSuccess('');
-  };
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    setError('')
+    setSuccess('')
+  }
 
   const handleSubmit = async e => {
-    e.preventDefault();
-    // simple front–end check
+    e.preventDefault()
     if (!form.username || !form.email || !form.password || !form.dob) {
-      setError('All fields are required.');
-      return;
+      return setError('All fields are required.')
     }
-
     try {
-      await registerUser(form);
-      setSuccess('Registration successful! Redirecting…');
-      setTimeout(() => navigate('/login'), 1200);
+      await registerUser(form)
+      setSuccess('Registration successful! Redirecting…')
+      setTimeout(() => navigate('/login'), 1200)
     } catch (err) {
-      setError(err.message || 'Registration failed');
+      setError(err.message || 'Registration failed')
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow">
-        <h1 className="text-2xl font-semibold mb-6 text-gray-800">Register</h1>
+    <Box
+      maxW="md"
+      mx="auto"
+      mt={12}
+      p={6}
+      bg="white"
+      boxShadow="lg"
+      borderRadius="md"
+    >
+      <Heading
+        as="h2"
+        size="lg"
+        mb={6}
+        textAlign="center"
+        color="orange.400"
+      >
+        Create Account
+      </Heading>
 
-        <form onSubmit={handleSubmit} noValidate>
-          {/** Username */}
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-1">Username</label>
-            <input
-              name="username"
-              type="text"
-              value={form.username}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-200"
-            />
-          </div>
+      <form onSubmit={handleSubmit}>
+        <FormControl id="username" mb={4} isRequired>
+          <FormLabel>Username</FormLabel>
+          <Input
+            name="username"
+            placeholder="Pick a username"
+            value={form.username}
+            onChange={handleChange}
+            bg="gray.50"
+          />
+        </FormControl>
 
-          {/** Email */}
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-1">Email</label>
-            <input
-              name="email"
-              type="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-200"
-            />
-          </div>
+        <FormControl id="email" mb={4} isRequired>
+          <FormLabel>Email</FormLabel>
+          <Input
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            value={form.email}
+            onChange={handleChange}
+            bg="gray.50"
+          />
+        </FormControl>
 
-          {/** Password */}
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-1">Password</label>
-            <input
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-200"
-            />
-          </div>
+        <FormControl id="password" mb={4} isRequired>
+          <FormLabel>Password</FormLabel>
+          <Input
+            name="password"
+            type="password"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={handleChange}
+            bg="gray.50"
+          />
+        </FormControl>
 
-          {/** DOB */}
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-1">Date of Birth</label>
-            <input
-              name="dob"
-              type="date"
-              value={form.dob}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-200"
-            />
-          </div>
+        <FormControl id="dob" mb={4} isRequired>
+          <FormLabel>Date of Birth</FormLabel>
+          <Input
+            name="dob"
+            type="date"
+            value={form.dob}
+            onChange={handleChange}
+            bg="gray.50"
+          />
+        </FormControl>
 
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
-          >
-            Register
-          </button>
-        </form>
+        {error && (
+          <Text color="red.500" mb={4} textAlign="center">
+            {error}
+          </Text>
+        )}
+        {success && (
+          <Text color="green.500" mb={4} textAlign="center">
+            {success}
+          </Text>
+        )}
 
-        {error && <p className="mt-4 text-red-600 font-medium">{error}</p>}
-        {success && <p className="mt-4 text-green-600 font-medium">{success}</p>}
-      </div>
-    </div>
-  );
+        <Button type="submit" colorScheme="orange" width="full">
+          Register
+        </Button>
+      </form>
+    </Box>
+  )
 }

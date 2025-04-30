@@ -1,132 +1,246 @@
-import { useState, useEffect } from "react";
+// src/pages/DashboardPage.jsx
+import { useState, useEffect } from "react"
+import { Link as RouterLink } from "react-router-dom"
+import {
+  Box,
+  Button,
+  Badge,
+  Heading,
+  Text,
+  Stack,
+  HStack,
+  VStack,
+  Spinner,
+  FormControl,
+  FormLabel,
+  Input,
+  Select,
+  Textarea,
+  useToast,
+} from "@chakra-ui/react"
 import {
   fetchUserWorkoutPlans,
   createWorkoutPlan,
-} from "../services/workoutService";
+  deleteWorkoutPlan,
+} from "../services/workoutService"
 
 export default function DashboardPage() {
-  const [plans, setPlans]     = useState([]);
-  const [form, setForm]       = useState({
-    name: "",
+  const [plans, setPlans]                       = useState([])
+  const [loading, setLoading]                   = useState(true)
+  const [form, setForm]                         = useState({
+    name:        "",
     description: "",
-    difficulty: "Beginner",
+    difficulty:  "Beginner",
     muscleGroup: "",
-    imageUrl: "",
-  });
-  const [error, setError]     = useState("");
-  const [success, setSuccess] = useState("");
+  })
+  const [success, setSuccess]                   = useState("")
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState(null)
+  const toast                                   = useToast()
 
-  // Load existing plans on mount
   useEffect(() => {
-    loadPlans();
-  }, []);
+    loadPlans()
+  }, [])
 
   async function loadPlans() {
+    setLoading(true)
     try {
-      const data = await fetchUserWorkoutPlans();
-      setPlans(data);
+      const data = await fetchUserWorkoutPlans()
+      setPlans(data)
     } catch (err) {
-      setError(err.message);
+      toast({ status: "error", description: err.message })
+    } finally {
+      setLoading(false)
     }
   }
 
-  // Form field change
   function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-    setError("");
-    setSuccess("");
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+    setSuccess("")
   }
 
-  // Submit new plan
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
+    e.preventDefault()
     try {
-      await createWorkoutPlan(form);
-      setSuccess("Workout plan created!");
+      await createWorkoutPlan(form)
+      setSuccess("Workout plan created!")
       setForm({
-        name: "",
+        name:        "",
         description: "",
-        difficulty: "Beginner",
+        difficulty:  "Beginner",
         muscleGroup: "",
-        imageUrl: "",
-      });
-      loadPlans();
+      })
+      loadPlans()
     } catch (err) {
-      setError(err.message);
+      toast({ status: "error", description: err.message })
     }
+  }
+
+  async function handleDelete(id) {
+    try {
+      await deleteWorkoutPlan(id)
+      toast({ status: "success", description: "Plan deleted" })
+      setConfirmingDeleteId(null)
+      loadPlans()
+    } catch (err) {
+      toast({ status: "error", description: err.message })
+    }
+  }
+
+  if (loading) {
+    return (
+      <Box textAlign="center" py={10}>
+        <Spinner size="xl" />
+      </Box>
+    )
   }
 
   return (
-    <div className="page-container">
-      <h1>Your Workout Plans</h1>
+    <Box maxW="4xl" mx="auto" py={8} px={4}>
+      {/* Header + New Plan button */}
+      <HStack justify="space-between" mb={6}>
+        <Heading>Your Workout Plans</Heading>
+        <Button
+          as={RouterLink}
+          to="/plans/new"
+          bg="teal.500"
+          color="white"
+          _hover={{ bg: "teal.500" }}     
+          _active={{ bg: "teal.600" }}     
+        >
+          + New Plan
+        </Button>
+      </HStack>
 
-      {error && <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>}
-      {success && (
-        <p style={{ color: "green", fontWeight: "bold" }}>{success}</p>
-      )}
+      {}
+      <Box as="form" onSubmit={handleSubmit} bg="gray.50" p={6} borderRadius="md" mb={8}>
+        <VStack spacing={4} align="stretch">
+          <HStack spacing={4}>
+            <FormControl id="name" isRequired>
+              <FormLabel>Name</FormLabel>
+              <Input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="e.g. Leg Day"
+              />
+            </FormControl>
+            <FormControl id="muscleGroup" isRequired>
+              <FormLabel>Muscle Group</FormLabel>
+              <Input
+                name="muscleGroup"
+                value={form.muscleGroup}
+                onChange={handleChange}
+                placeholder="e.g. Legs"
+              />
+            </FormControl>
+            <FormControl id="difficulty">
+              <FormLabel>Difficulty</FormLabel>
+              <Select
+                name="difficulty"
+                value={form.difficulty}
+                onChange={handleChange}
+              >
+                <option>Beginner</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+              </Select>
+            </FormControl>
+          </HStack>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          <FormControl id="description">
+            <FormLabel>Description</FormLabel>
+            <Textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Optional notes…"
+            />
+          </FormControl>
 
-        <div>
-          <label>Description</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-          />
-        </div>
+          <Button type="submit" colorScheme="teal" size="md">
+            Create Plan
+          </Button>
+          {success && <Text color="green.500">{success}</Text>}
+        </VStack>
+      </Box>
 
-        <div>
-          <label>Difficulty</label>
-          <select
-            name="difficulty"
-            value={form.difficulty}
-            onChange={handleChange}
-          >
-            <option>Beginner</option>
-            <option>Intermediate</option>
-            <option>Advanced</option>
-          </select>
-        </div>
+      {}
+      <VStack spacing={4} align="stretch">
+        {plans.length === 0 && <Text>You have no plans yet.</Text>}
 
-        <div>
-          <label>Muscle Group</label>
-          <input
-            name="muscleGroup"
-            value={form.muscleGroup}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        {plans.map(plan => {
+          const badgeColor =
+            plan.difficulty === "Beginner"
+              ? "green"
+              : plan.difficulty === "Intermediate"
+              ? "orange"
+              : "red"
 
-        <button type="submit">Create Plan</button>
-      </form>
+          return (
+            <Box
+              key={plan.id}
+              p={5}
+              shadow="md"
+              borderWidth="1px"
+              borderRadius="md"
+              bg="white"
+            >
+              <HStack justify="space-between">
+                <Heading size="md">{plan.name}</Heading>
+                <Badge colorScheme={badgeColor}>
+                  {plan.difficulty}
+                </Badge>
+              </HStack>
+              <Text fontSize="sm" color="gray.600" mb={2}>
+                {plan.muscleGroup}
+              </Text>
+              <Text mb={4}>{plan.description}</Text>
 
-      <h2>Existing Plans</h2>
-      {plans.length === 0 ? (
-        <p>You have no plans yet.</p>
-      ) : (
-        <ul>
-          {plans.map((p) => (
-            <li key={p.id}>
-              <strong>{p.name}</strong> — {p.difficulty},{" "}
-              {p.muscleGroup}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+              <HStack spacing={3}>
+                <Button size="sm" as={RouterLink} to={`/plans/${plan.id}`}>
+                  View
+                </Button>
+                <Button
+                  size="sm"
+                  as={RouterLink}
+                  to={`/plans/${plan.id}/edit`}
+                  colorScheme="blue"
+                >
+                  Edit
+                </Button>
+
+                {confirmingDeleteId === plan.id ? (
+                  <>
+                    <Button
+                      size="sm"
+                      colorScheme="red"
+                      onClick={() => handleDelete(plan.id)}
+                    >
+                      Confirm Delete
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setConfirmingDeleteId(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    colorScheme="red"
+                    onClick={() => setConfirmingDeleteId(plan.id)}
+                  >
+                    Delete
+                  </Button>
+                )}
+              </HStack>
+            </Box>
+          )
+        })}
+      </VStack>
+    </Box>
+  )
 }

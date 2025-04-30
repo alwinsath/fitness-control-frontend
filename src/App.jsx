@@ -1,22 +1,49 @@
-import { Routes, Route } from 'react-router-dom'
-import Layout from './components/Layout'
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
-import DashboardPage from './pages/DashboardPage'
-import ProtectedRoute from './ProtectedRoute'
+import React from "react"
+import { Routes, Route, Navigate } from "react-router-dom"
+import { useAuth } from "./context/AuthContext"
+import Layout from "./components/Layout"
+import HomePage from "./pages/HomePage"
+import LoginPage from "./pages/LoginPage"
+import RegisterPage from "./pages/RegisterPage"
+import DashboardPage from "./pages/DashboardPage"
+import NewPlanPage from "./pages/NewPlanPage"
+import ViewPlanPage from "./pages/ViewPlanPage"
+import EditPlanPage from "./pages/EditPlanPage"
+import ProtectedRoute from "./ProtectedRoute"
 
-function App() {
+export default function App() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <Routes>
-      {/* All routes share the same Layout wrapper */}
       <Route path="/" element={<Layout />}>
-        {/* Public pages */}
-        <Route index element={<HomePage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
+        {/* Public */}
+        <Route
+          index
+          element={
+            isAuthenticated
+              ? <Navigate to="/dashboard" replace />
+              : <HomePage />
+          }
+        />
+        <Route
+          path="login"
+          element={
+            isAuthenticated
+              ? <Navigate to="/dashboard" replace />
+              : <LoginPage />
+          }
+        />
+        <Route
+          path="register"
+          element={
+            isAuthenticated
+              ? <Navigate to="/dashboard" replace />
+              : <RegisterPage />
+          }
+        />
 
-        {/* Protected: only accessible when authenticated */}
+        {/* Protected */}
         <Route
           path="dashboard"
           element={
@@ -25,9 +52,31 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="plans/new"
+          element={
+            <ProtectedRoute>
+              <NewPlanPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="plans/:planId"
+          element={
+            <ProtectedRoute>
+              <ViewPlanPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="plans/:planId/edit"
+          element={
+            <ProtectedRoute>
+              <EditPlanPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
     </Routes>
   )
 }
-
-export default App
