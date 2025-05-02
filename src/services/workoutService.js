@@ -45,8 +45,9 @@ export async function fetchWorkoutPlan(planId) {
     const errText = await res.text();
     throw new Error(errText || "Could not load plan");
   }
-  return await res.json();
+  return await res.json();   
 }
+
 
 
 export async function updateWorkoutPlan(planId, updatedPlan) {
@@ -129,4 +130,15 @@ export async function deleteExercise(planId, id) {
     const errText = await res.text();
     throw new Error(errText || "Delete exercise failed");
   }
+}
+
+export async function fetchSuggestions(muscleGroup) {
+  const res = await fetch(`${API_BASE}/Suggestions/${muscleGroup}`, {
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(txt || "Could not load suggestions");
+  }
+  return res.json(); 
 }
