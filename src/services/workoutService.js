@@ -5,17 +5,16 @@ const API_BASE = "https://localhost:7145/api";
 function getAuthHeaders() {
   const token = localStorage.getItem("token");
   return {
-    "Content-Type":  "application/json",
-    Authorization:   `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
   };
 }
 
-
 export async function createWorkoutPlan(plan) {
   const res = await fetch(`${API_BASE}/WorkoutPlans`, {
-    method:  "POST",
+    method: "POST",
     headers: getAuthHeaders(),
-    body:    JSON.stringify(plan),
+    body: JSON.stringify(plan),
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -23,7 +22,6 @@ export async function createWorkoutPlan(plan) {
   }
   return await res.json();
 }
-
 
 export async function fetchUserWorkoutPlans() {
   const res = await fetch(`${API_BASE}/WorkoutPlans`, {
@@ -36,7 +34,6 @@ export async function fetchUserWorkoutPlans() {
   return await res.json();
 }
 
-
 export async function fetchWorkoutPlan(planId) {
   const res = await fetch(`${API_BASE}/WorkoutPlans/${planId}`, {
     headers: getAuthHeaders(),
@@ -45,16 +42,14 @@ export async function fetchWorkoutPlan(planId) {
     const errText = await res.text();
     throw new Error(errText || "Could not load plan");
   }
-  return await res.json();   
+  return await res.json();
 }
-
-
 
 export async function updateWorkoutPlan(planId, updatedPlan) {
   const res = await fetch(`${API_BASE}/WorkoutPlans/${planId}`, {
-    method:  "PUT",
+    method: "PUT",
     headers: getAuthHeaders(),
-    body:    JSON.stringify(updatedPlan),
+    body: JSON.stringify(updatedPlan),
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -65,7 +60,7 @@ export async function updateWorkoutPlan(planId, updatedPlan) {
 
 export async function deleteWorkoutPlan(planId) {
   const res = await fetch(`${API_BASE}/WorkoutPlans/${planId}`, {
-    method:  "DELETE",
+    method: "DELETE",
     headers: getAuthHeaders(),
   });
   if (!res.ok) {
@@ -73,7 +68,6 @@ export async function deleteWorkoutPlan(planId) {
     throw new Error(errText || "Delete failed");
   }
 }
-
 
 export async function fetchExercises(planId) {
   const res = await fetch(`${API_BASE}/WorkoutPlans/${planId}/Exercises`, {
@@ -86,12 +80,11 @@ export async function fetchExercises(planId) {
   return await res.json();
 }
 
-
 export async function createExercise(planId, exercise) {
   const res = await fetch(`${API_BASE}/WorkoutPlans/${planId}/Exercises`, {
-    method:  "POST",
+    method: "POST",
     headers: getAuthHeaders(),
-    body:    JSON.stringify(exercise),
+    body: JSON.stringify(exercise),
   });
   if (!res.ok) {
     const errText = await res.text();
@@ -100,14 +93,13 @@ export async function createExercise(planId, exercise) {
   return await res.json();
 }
 
-
 export async function updateExercise(planId, id, exercise) {
   const res = await fetch(
     `${API_BASE}/WorkoutPlans/${planId}/Exercises/${id}`,
     {
-      method:  "PUT",
+      method: "PUT",
       headers: getAuthHeaders(),
-      body:    JSON.stringify(exercise),
+      body: JSON.stringify(exercise),
     }
   );
   if (!res.ok) {
@@ -117,12 +109,11 @@ export async function updateExercise(planId, id, exercise) {
   return await res.text();
 }
 
-
 export async function deleteExercise(planId, id) {
   const res = await fetch(
     `${API_BASE}/WorkoutPlans/${planId}/Exercises/${id}`,
     {
-      method:  "DELETE",
+      method: "DELETE",
       headers: getAuthHeaders(),
     }
   );
@@ -140,5 +131,77 @@ export async function fetchSuggestions(muscleGroup) {
     const txt = await res.text();
     throw new Error(txt || "Could not load suggestions");
   }
+  return res.json();
+}
+
+// schedule a workout plan for a user
+export async function scheduleWorkout(planId, date) {
+  const res = await fetch(`${API_BASE}/WorkoutCalendar`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      planId,
+      date,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(errText || "Failed to schedule workout");
+  }
+
+  return await res.json();
+}
+
+export async function fetchWorkoutCalendar() {
+  const res = await fetch(`${API_BASE}/WorkoutCalendar`, {
+    headers: getAuthHeaders(),
+  })
+  if (!res.ok) throw new Error("Failed to fetch calendar")
+  return await res.json()
+}
+
+export async function fetchWorkoutsByDate(date) {
+  const res = await fetch(
+    `${API_BASE}/WorkoutCalendar/by-date?date=${date}`,
+    { headers: getAuthHeaders() }
+  );
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(errText || "Failed to fetch workouts");
+  }
+  const data = await res.json();
+  return data.map((w) => ({
+    Id: w.id,
+    Date: w.date,
+    Completed: w.completed,
+    Plan: {
+      Id: w.plan.id,
+      Name: w.plan.name,
+      Difficulty: w.plan.difficulty,
+      Exercises: w.plan.exercises.map((e) => ({
+        Name: e.name,
+        Sets: e.sets,
+        Reps: e.reps,
+        Instructions: e.instructions,
+      })),
+    },
+  }));
+}
+
+// mark a scheduled workout complete
+export async function markWorkoutComplete(id) {
+  const res = await fetch(`${API_BASE}/WorkoutCalendar/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(errText || "Failed to mark complete");
+  }
   return res.json(); 
 }
+
+
+
+

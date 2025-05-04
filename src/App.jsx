@@ -9,6 +9,7 @@ import DashboardPage from "./pages/DashboardPage"
 import NewPlanPage from "./pages/NewPlanPage"
 import ViewPlanPage from "./pages/ViewPlanPage"
 import EditPlanPage from "./pages/EditPlanPage"
+import WorkoutCalendarPage from "./pages/WorkoutCalendarPage" // 🆕 added this!
 import ProtectedRoute from "./ProtectedRoute"
 
 export default function App() {
@@ -73,6 +74,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EditPlanPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="calendar"
+          element={
+            <ProtectedRoute>
+              <WorkoutCalendarPage />
             </ProtectedRoute>
           }
         />

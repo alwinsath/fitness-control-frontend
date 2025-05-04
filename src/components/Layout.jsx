@@ -23,7 +23,6 @@ export default function Layout() {
         py={4}
         align="center"
       >
-        
         <Heading
           as={RouterLink}
           to={isAuthenticated ? '/dashboard' : '/'}
@@ -32,7 +31,7 @@ export default function Layout() {
           color="white"
           _hover={{
             textDecoration: 'none',
-            color: 'white',      
+            color: 'white',
           }}
         >
           Fitness Control
@@ -53,6 +52,18 @@ export default function Layout() {
               }}
             >
               Dashboard
+            </Link>
+            <Link
+              as={RouterLink}
+              to="/calendar"
+              mr={4}
+              color="white"
+              _hover={{
+                textDecoration: 'underline',
+                color: 'white',
+              }}
+            >
+              Calendar
             </Link>
             <Button
               onClick={logout}
