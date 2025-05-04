@@ -13,7 +13,7 @@ import {
   import { useState } from "react"
   import DatePicker from "react-datepicker"
   import "react-datepicker/dist/react-datepicker.css"
-  import { scheduleWorkout } from "../services/workoutService" 
+  import { scheduleWorkout } from "../services/workoutService"
   
   export default function ScheduleModal({ isOpen, onClose, planId }) {
     const [selectedDate, setSelectedDate] = useState(new Date())
@@ -23,13 +23,14 @@ import {
     const handleSubmit = async () => {
       try {
         setIsSubmitting(true)
-        await scheduleWorkout(planId, selectedDate) 
-        toast({
-          title: "Workout scheduled!",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        })
+        // format local YYYY-MM-DD
+        const isoDate = [
+          selectedDate.getFullYear(),
+          String(selectedDate.getMonth() + 1).padStart(2, "0"),
+          String(selectedDate.getDate()).padStart(2, "0"),
+        ].join("-")
+        await scheduleWorkout(planId, isoDate)
+        toast({ title: "Workout scheduled!", status: "success", duration: 3000 })
         onClose()
       } catch (err) {
         toast({
@@ -37,7 +38,6 @@ import {
           description: err.message,
           status: "error",
           duration: 4000,
-          isClosable: true,
         })
       } finally {
         setIsSubmitting(false)
@@ -48,15 +48,15 @@ import {
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Schedule Workout</ModalHeader>
+          <ModalHeader>Select a Date</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
+            {/* remove inline → use pop-up picker */}
             <DatePicker
               selected={selectedDate}
               onChange={(date) => setSelectedDate(date)}
               minDate={new Date()}
               dateFormat="yyyy-MM-dd"
-              inline
             />
           </ModalBody>
           <ModalFooter>

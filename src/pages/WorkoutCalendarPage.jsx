@@ -1,4 +1,4 @@
-// shows the user their scheduled workouts on a calendar
+// src/pages/WorkoutCalendarPage.jsx
 import { useEffect, useState } from "react"
 import Calendar from "react-calendar"
 import "react-calendar/dist/Calendar.css"
@@ -23,12 +23,21 @@ export default function WorkoutCalendarPage() {
   const [error, setError] = useState("")
   const toast = useToast()
 
-  // load scheduled workouts on mount
+  // load and normalize scheduled dates via real Date parsing
   useEffect(() => {
-    async function loadData() {
+    async function load() {
       try {
         const data = await fetchWorkoutCalendar()
-        setEntries(data)
+        setEntries(
+          data.map((e) => {
+            const dt = new Date(e.date)   // parse ISO timestamp
+            return {
+              y: dt.getFullYear(),        // e.g. 2025
+              m: dt.getMonth(),           // 0-based month
+              d: dt.getDate(),            // 1–31 day
+            }
+          })
+        )
       } catch (err) {
         toast({
           title: "Failed to load calendar",
@@ -41,26 +50,30 @@ export default function WorkoutCalendarPage() {
         setLoading(false)
       }
     }
-    loadData()
+    load()
   }, [])
 
-  // mark calendar tiles with scheduled workouts
-  const tileClassName = ({ date, view }) => {
-    if (view !== "month") return
-    const iso = date.toISOString().split("T")[0]
-    const hasWorkout = entries.some(e => e.date.startsWith(iso))
-    return hasWorkout ? "workout-day" : null
-  }
+  // check if a given tile date has a workout
+  const hasWorkout = (date) =>
+    entries.some(
+      (e) =>
+        e.y === date.getFullYear() &&
+        e.m === date.getMonth() &&
+        e.d === date.getDate()
+    )
 
-  // handle click on a day
+  // fetch details when a tile is clicked
   const handleDateClick = async (date) => {
     setSelectedDate(date)
-    setSelectedWorkouts([])
     setLoadingDetails(true)
     setError("")
 
     try {
-      const iso = date.toISOString().split("T")[0]
+      const iso = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-")
       const data = await fetchWorkoutsByDate(iso)
       setSelectedWorkouts(data)
     } catch (err) {
@@ -73,28 +86,26 @@ export default function WorkoutCalendarPage() {
   return (
     <Box maxW="600px" mx="auto" mt={10}>
       <Heading mb={6}>My Workout Calendar</Heading>
+
       {loading ? (
         <Spinner />
       ) : (
         <Calendar
-          tileClassName={tileClassName}
           onClickDay={handleDateClick}
+          tileClassName={({ date, view }) =>
+            view === "month" && hasWorkout(date) ? "workout-day" : null
+          }
         />
       )}
+
       <WorkoutDetailsModal
         isOpen={!!selectedDate}
         onClose={() => setSelectedDate(null)}
         isLoading={loadingDetails}
         workouts={selectedWorkouts}
+        setWorkouts={setSelectedWorkouts}
         error={error}
       />
-      <style>{`
-        .workout-day {
-          background: #38A169;
-          color: white;
-          border-radius: 50%;
-        }
-      `}</style>
     </Box>
   )
 }

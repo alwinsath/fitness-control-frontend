@@ -202,6 +202,17 @@ export async function markWorkoutComplete(id) {
   return res.json(); 
 }
 
+// delete a scheduled workout
+export async function deleteScheduledWorkout(id) {
+  const res = await fetch(`${API_BASE}/WorkoutCalendar/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(errText || "Failed to delete scheduled workout");
+  }
+}
 
 
 

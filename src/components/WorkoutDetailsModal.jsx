@@ -14,41 +14,52 @@ import {
     Button,
     Badge,
     useToast,
-  } from "@chakra-ui/react";
-  import { markWorkoutComplete } from "../services/workoutService";
+  } from "@chakra-ui/react"
+  import {
+    markWorkoutComplete,
+    deleteScheduledWorkout,
+  } from "../services/workoutService"
   
   export default function WorkoutDetailsModal({
     isOpen,
     onClose,
     isLoading,
     workouts,
+    setWorkouts,
     error,
   }) {
-    const toast = useToast();
+    const toast = useToast()
   
-    const handleMarkComplete = async (entryId) => {
+    // handler for marking complete
+    const handleMarkComplete = async (id) => {
       try {
-        const updated = await markWorkoutComplete(entryId);
-        toast({ title: "Marked complete!", status: "success" });
-        // update local state so UI reflects the change
-        // mutate workouts array in place:
+        const updated = await markWorkoutComplete(id)
+        toast({ title: "Marked complete!", status: "success" })
         workouts.forEach((w, i) => {
-          if (w.Id === updated.Id) workouts[i].Completed = true;
-        });
+          if (w.Id === updated.Id) workouts[i].Completed = true
+        })
+        setWorkouts([...workouts])
       } catch (err) {
-        toast({
-          title: "Error",
-          description: err.message,
-          status: "error",
-        });
+        toast({ title: "Error", description: err.message, status: "error" })
       }
-    };
+    }
+  
+    // handler for deleting entry
+    const handleDelete = async (id) => {
+      try {
+        await deleteScheduledWorkout(id)
+        toast({ title: "Deleted workout", status: "info" })
+        setWorkouts(workouts.filter((w) => w.Id !== id))
+      } catch (err) {
+        toast({ title: "Error", description: err.message, status: "error" })
+      }
+    }
   
     return (
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Scheduled Workouts</ModalHeader>
+          <ModalHeader>Scheduled Workouts</ModalHeader> {/* modal title */}
           <ModalCloseButton />
           <ModalBody pb={6}>
             {isLoading ? (
@@ -65,7 +76,7 @@ import {
                 w.Plan ? (
                   <List spacing={3} key={w.Id} mb={4}>
                     <ListItem>
-                      <Text fontWeight="bold">{w.Plan.Name}</Text>
+                      <Text fontWeight="bold">{w.Plan.Name}</Text> {/* plan name */}
                       <Text fontSize="sm" color="gray.600">
                         Difficulty: {w.Plan.Difficulty}
                       </Text>
@@ -81,12 +92,19 @@ import {
                       ) : (
                         <Button
                           size="sm"
-                          mt={2}
+                          mr={2}
                           onClick={() => handleMarkComplete(w.Id)}
                         >
                           Mark Complete
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        colorScheme="red"
+                        onClick={() => handleDelete(w.Id)}
+                      >
+                        Delete
+                      </Button>
                     </ListItem>
                   </List>
                 ) : null
@@ -95,6 +113,6 @@ import {
           </ModalBody>
         </ModalContent>
       </Modal>
-    );
+    )
   }
   
