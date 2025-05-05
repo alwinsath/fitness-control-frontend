@@ -7,8 +7,6 @@ import {
   Heading,
   Text,
   Stack,
-  Input,
-  Textarea,
   Spinner,
   useToast,
   Divider,
@@ -18,9 +16,6 @@ import {
 import {
   fetchWorkoutPlan,
   fetchExercises,
-  createExercise,
-  updateExercise,
-  deleteExercise,
 } from "../services/workoutService"
 
 import ScheduleModal from "../components/ScheduleModal"
@@ -28,20 +23,12 @@ import ScheduleModal from "../components/ScheduleModal"
 export default function ViewPlanPage() {
   const { planId } = useParams()
   const toast = useToast()
-
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   const [plan, setPlan] = useState(null)
   const [loadingPlan, setLoadingPlan] = useState(true)
-
   const [exercises, setExercises] = useState([])
   const [loadingExercises, setLoadingExs] = useState(true)
-
-  const emptyEx = { name: "", sets: "", reps: "", instructions: "" }
-  const [newEx, setNewEx] = useState(emptyEx)
-
-  const [editingId, setEditingId] = useState(null)
-  const [editEx, setEditEx] = useState(emptyEx)
 
   useEffect(() => {
     loadPlan()
@@ -73,16 +60,22 @@ export default function ViewPlanPage() {
   }
 
   return (
-    <Box p={6}>
+    <Box
+      maxW="3xl"
+      mx="auto"
+      px={{ base: 4, md: 8 }}
+      py={{ base: 6, md: 8 }}
+    >
       {loadingPlan ? (
         <Spinner />
       ) : (
-        <Box>
-          <Heading>{plan.name}</Heading>
-          <Text>{plan.description}</Text>
-          <Text>Difficulty: {plan.difficulty}</Text>
+        <Box mb={6}>
+          <Heading mb={2}>{plan.name}</Heading>
+          <Text mb={2}>{plan.description}</Text>
+          <Text mb={4}>Difficulty: {plan.difficulty}</Text>
 
-          <Button colorScheme="blue" mt={4} onClick={onOpen}>
+          
+          <Button colorScheme="brand" onClick={onOpen}>
             Schedule This Plan
           </Button>
 
@@ -95,10 +88,18 @@ export default function ViewPlanPage() {
       ) : (
         <Stack spacing={4}>
           {exercises.map((ex) => (
-            <Box key={ex.id} p={4} borderWidth="1px" rounded="md">
-              <Heading size="sm">{ex.name}</Heading>
-              <Text>
-                {ex.sets} sets x {ex.reps} reps
+            <Box
+              key={ex.id}
+              p={{ base: 4, md: 6 }}
+              bg="white"
+              rounded="md"
+              shadow="sm"
+            >
+              <Heading size="sm" mb={1}>
+                {ex.name}
+              </Heading>
+              <Text mb={1}>
+                {ex.sets} sets × {ex.reps} reps
               </Text>
               <Text fontSize="sm" color="gray.500">
                 {ex.instructions}
@@ -108,7 +109,11 @@ export default function ViewPlanPage() {
         </Stack>
       )}
 
-      <ScheduleModal isOpen={isOpen} onClose={onClose} planId={planId} />
+      <ScheduleModal
+        isOpen={isOpen}
+        onClose={onClose}
+        planId={planId}
+      />
     </Box>
   )
 }

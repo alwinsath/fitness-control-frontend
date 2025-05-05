@@ -6,10 +6,13 @@ import {
   Heading,
   FormControl,
   FormLabel,
+  InputGroup,          // container for input + button
   Input,
+  InputRightElement,   // positions our eye button
   Button,
   Text,
 } from '@chakra-ui/react'
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import { registerUser } from '../services/authService'
 
 export default function RegisterPage() {
@@ -20,6 +23,7 @@ export default function RegisterPage() {
     password: '',
     dob: '',
   })
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -31,9 +35,18 @@ export default function RegisterPage() {
 
   const handleSubmit = async e => {
     e.preventDefault()
+    // validation
     if (!form.username || !form.email || !form.password || !form.dob) {
       return setError('All fields are required.')
     }
+    if (!form.email.includes('@')) {
+      return setError(`Please include an '@' in the email address.`)
+    }
+    const age = new Date().getFullYear() - new Date(form.dob).getFullYear()
+    if (age < 16 || age > 70) {
+      return setError('You must be between 16 and 70 years old.')
+    }
+
     try {
       await registerUser(form)
       setSuccess('Registration successful! Redirecting…')
@@ -49,21 +62,21 @@ export default function RegisterPage() {
       mx="auto"
       mt={12}
       p={6}
-      bg="white"
-      boxShadow="lg"
-      borderRadius="md"
+      bg="brand.50"
+      boxShadow="md"
+      borderRadius="lg"
     >
       <Heading
         as="h2"
         size="lg"
         mb={6}
         textAlign="center"
-        color="orange.400"
+        color="brand.600"
       >
         Create Account
       </Heading>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <FormControl id="username" mb={4} isRequired>
           <FormLabel>Username</FormLabel>
           <Input
@@ -71,7 +84,9 @@ export default function RegisterPage() {
             placeholder="Pick a username"
             value={form.username}
             onChange={handleChange}
-            bg="gray.50"
+            bg="white"
+            borderColor="brand.200"
+            _focus={{ borderColor: 'brand.500' }}
           />
         </FormControl>
 
@@ -83,20 +98,35 @@ export default function RegisterPage() {
             placeholder="you@example.com"
             value={form.email}
             onChange={handleChange}
-            bg="gray.50"
+            bg="white"
+            borderColor="brand.200"
+            _focus={{ borderColor: 'brand.500' }}
           />
         </FormControl>
 
         <FormControl id="password" mb={4} isRequired>
           <FormLabel>Password</FormLabel>
-          <Input
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={handleChange}
-            bg="gray.50"
-          />
+          <InputGroup>
+            <Input
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="••••••••"
+              value={form.password}
+              onChange={handleChange}
+              bg="white"
+              borderColor="brand.200"
+              _focus={{ borderColor: 'brand.500' }}
+            />
+            <InputRightElement>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowPassword(v => !v)}
+              >
+                {showPassword ? <ViewOffIcon /> : <ViewIcon />}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
         </FormControl>
 
         <FormControl id="dob" mb={4} isRequired>
@@ -106,7 +136,9 @@ export default function RegisterPage() {
             type="date"
             value={form.dob}
             onChange={handleChange}
-            bg="gray.50"
+            bg="white"
+            borderColor="brand.200"
+            _focus={{ borderColor: 'brand.500' }}
           />
         </FormControl>
 
@@ -121,7 +153,13 @@ export default function RegisterPage() {
           </Text>
         )}
 
-        <Button type="submit" colorScheme="orange" width="full">
+        <Button
+          type="submit"
+          bg="brand.500"
+          color="white"
+          width="full"
+          _hover={{ bg: 'brand.600' }}
+        >
           Register
         </Button>
       </form>

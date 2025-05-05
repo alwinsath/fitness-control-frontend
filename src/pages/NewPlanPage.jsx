@@ -11,7 +11,7 @@ import {
   Button,
   Text,
   Stack,
-  Checkbox,
+  SimpleGrid,
   VStack,
   HStack,
   Tag,
@@ -27,7 +27,7 @@ export default function NewPlanPage() {
   const navigate = useNavigate()
   const toast    = useToast()
 
-  // plan form
+  // form state
   const [form, setForm] = useState({
     name:        "",
     description: "",
@@ -35,22 +35,19 @@ export default function NewPlanPage() {
     muscleGroup: "",
   })
 
-  // suggestions for the currently-selected group
-  const [suggestions, setSuggestions] = useState([])
-
-  // the full list of exercises the user has checked
+  // suggestions & selections
+  const [suggestions, setSuggestions]         = useState([])
   const [selectedExercises, setSelectedExercises] = useState([])
 
   const [error, setError]     = useState("")
   const [success, setSuccess] = useState("")
 
-  // Fetch suggestions whenever the muscleGroup changes
+  // fetch suggestions when muscleGroup changes
   useEffect(() => {
     if (!form.muscleGroup) {
       setSuggestions([])
       return
     }
-
     fetchSuggestions(form.muscleGroup)
       .then(setSuggestions)
       .catch(err => {
@@ -59,60 +56,65 @@ export default function NewPlanPage() {
       })
   }, [form.muscleGroup, toast])
 
-  // generic form field change
+  // handle form field changes
   function handleChange(e) {
     const { name, value } = e.target
     setForm(f => ({ ...f, [name]: value }))
-    setError("")
-    setSuccess("")
+    setError(""); setSuccess("")
   }
 
-  // toggle an exercise in/out of selectedExercises
+  // toggle card selection
   function toggleExercise(ex) {
     setSelectedExercises(prev => {
       const already = prev.find(e => e.name === ex.name)
       if (already) {
         return prev.filter(e => e.name !== ex.name)
-      } else {
-        return [...prev, ex]
       }
+      return [...prev, ex]
     })
   }
 
-  // submit entire plan + selectedExercises to API
+  // submit plan
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setError("Name is required.")
-      return
+      setError("Name is required."); return
     }
     if (!form.muscleGroup) {
-      setError("Please pick at least one muscle group.")
-      return
+      setError("Please pick at least one muscle group."); return
     }
     if (selectedExercises.length === 0) {
-      setError("You must pick at least one exercise.")
-      return
+      setError("You must pick at least one exercise."); return
     }
 
     try {
-      await createWorkoutPlan({
-        ...form,
-        exercises: selectedExercises
-      })
-
+      await createWorkoutPlan({ ...form, exercises: selectedExercises })
       setSuccess("Workout plan created!")
       toast({ status: "success", description: "Plan created successfully" })
       setTimeout(() => navigate("/dashboard"), 800)
-
     } catch (err) {
       setError(err.message)
     }
   }
 
   return (
-    <Box maxW="3xl" mx="auto" mt={8} p={6} bg="white" boxShadow="md" borderRadius="md">
-      <Heading as="h2" size="xl" mb={4} textAlign="center" color="orange.400">
+    <Box
+      maxW="3xl"
+      mx="auto"
+      mt={{ base: 6, md: 8 }}
+      px={{ base: 4, md: 8 }}
+      py={{ base: 6, md: 8 }}
+      bg="white"
+      boxShadow="md"
+      borderRadius="md"
+    >
+      <Heading
+        as="h2"
+        size="xl"
+        mb={4}
+        textAlign="center"
+        color="brand.300"
+      >
         New Workout Plan
       </Heading>
 
@@ -126,6 +128,7 @@ export default function NewPlanPage() {
               value={form.name}
               onChange={handleChange}
               placeholder="Enter plan name"
+              bg="gray.50"
             />
           </FormControl>
 
@@ -136,6 +139,7 @@ export default function NewPlanPage() {
               value={form.description}
               onChange={handleChange}
               placeholder="Optional description"
+              bg="gray.50"
             />
           </FormControl>
 
@@ -146,6 +150,7 @@ export default function NewPlanPage() {
                 name="difficulty"
                 value={form.difficulty}
                 onChange={handleChange}
+                bg="gray.50"
               >
                 <option>Beginner</option>
                 <option>Intermediate</option>
@@ -159,6 +164,7 @@ export default function NewPlanPage() {
                 name="muscleGroup"
                 value={form.muscleGroup}
                 onChange={handleChange}
+                bg="gray.50"
                 placeholder="Select a group"
               >
                 <option>Biceps</option>
@@ -172,29 +178,45 @@ export default function NewPlanPage() {
             </FormControl>
           </HStack>
 
-          {/* Checkboxes for suggestions */}
+          {/* Exercise suggestion cards */}
           {suggestions.length > 0 && (
             <Box>
               <Text fontWeight="semibold" mb={2}>
                 Pick Exercises from “{form.muscleGroup}”
               </Text>
-              <VStack align="start">
-                {suggestions.map(ex => (
-                  <Checkbox
-                    key={ex.name}
-                    isChecked={selectedExercises.some(e => e.name === ex.name)}
-                    onChange={() => toggleExercise(ex)}
-                  >
-                    {ex.name} — {ex.sets}×{ex.reps}
-                  </Checkbox>
-                ))}
-              </VStack>
+              <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={4}>
+                {suggestions.map(ex => {
+                  const isSelected = selectedExercises.some(e => e.name === ex.name)
+                  return (
+                    <Box
+                      key={ex.name}
+                      p={4}
+                      borderWidth="1px"
+                      borderRadius="md"
+                      shadow={isSelected ? "md" : "sm"}
+                      bg={isSelected ? "brand.100" : "white"}
+                      cursor="pointer"
+                      _hover={{
+                        shadow: "md",
+                        bg: isSelected ? "brand.200" : "gray.50",
+                      }}
+                      onClick={() => toggleExercise(ex)}
+                    >
+                      <Text fontWeight="bold" mb={1}>{ex.name}</Text>
+                      <Text fontSize="sm">{ex.sets} sets × {ex.reps} reps</Text>
+                      <Text fontSize="xs" color="gray.500" mt={2}>
+                        {ex.instructions}
+                      </Text>
+                    </Box>
+                  )
+                })}
+              </SimpleGrid>
             </Box>
           )}
 
           <Divider />
 
-          {/* Sidebar of already-chosen */}
+          {/* Selected exercises */}
           <Box>
             <Text fontWeight="semibold" mb={2}>
               Selected Exercises
@@ -204,7 +226,7 @@ export default function NewPlanPage() {
             ) : (
               <HStack wrap="wrap" spacing={2}>
                 {selectedExercises.map(ex => (
-                  <Tag key={ex.name} size="md" variant="subtle" colorScheme="teal">
+                  <Tag key={ex.name} size="md" variant="subtle" colorScheme="brand">
                     <TagLabel>
                       {ex.name} ({ex.sets}×{ex.reps})
                     </TagLabel>
@@ -216,11 +238,16 @@ export default function NewPlanPage() {
           </Box>
 
           {/* Errors & success */}
-          {error && <Text color="red.500">{error}</Text>}
+          {error  && <Text color="red.500">{error}</Text>}
           {success && <Text color="green.500">{success}</Text>}
 
           {/* Submit */}
-          <Button type="submit" colorScheme="orange" size="lg">
+          <Button
+            type="submit"
+            colorScheme="brand"
+            size="lg"
+            width="full"
+          >
             Create Plan
           </Button>
         </Stack>

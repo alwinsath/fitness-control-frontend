@@ -22,7 +22,6 @@ a:hover {
   color: #2563eb;      /* blue-600 */
 }
 
-/* Make form inputs a bit nicer by default */
 input, button, select, textarea {
   font-family: inherit;
   line-height: inherit;
@@ -36,9 +35,81 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
-.react-calendar__tile.workout-day {
+/* calendar container: hugs the calendar exactly */
+.calendar-wrapper {
+  display: inline-block;
+  padding: 0;               /* remove extra padding */
+  background: white;        /* white card */
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Make the calendar itself much larger */
+.big-calendar {
+  width: 650px;             /* wider calendar */
+  font-size: 1.2rem;        /* larger text in tiles */
+}
+
+/* Tweak the navigation bar inside the big calendar */
+.big-calendar .react-calendar__navigation {
+  font-size: 1.1rem;
+}
+
+/* Retain your existing calendar overrides */
+.react-calendar {
+  border: none;
+}
+
+.react-calendar__navigation {
+  background: #3182ce;         /* Chakra blue.600 */
+  color: white;
+  font-weight: bold;
+}
+
+.react-calendar__navigation button {
+  color: white !important;
+}
+
+.react-calendar__month-view__weekdays {
+  background-color: #ebf8ff;   /* light blue */
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #2a4365;              /* blue.800 */
+}
+
+.react-calendar__tile {
+  padding: 0.75em 0.5em;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 4px;
+}
+
+.react-calendar__tile:hover {
+  background: #bee3f8;         /* blue.200 */
+  color: #2b6cb0;              /* blue.700 */
+}
+
+.react-calendar__tile--active {
+  background: #2f855a !important;  /* green.600 */
+  color: white !important;
+}
+
+.react-calendar__tile--now {
+  background: #faf089;         /* yellow.300 */
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #e53e3e;              /* red.600 */
+}
+
+.react-calendar__tile.workout-day,
+.react-calendar__tile--active.workout-day,
+.react-calendar__tile.workout-day:hover {
   background-color: #38A169 !important;
   color: white           !important;
   border-radius: 50%     !important;
 }
-
