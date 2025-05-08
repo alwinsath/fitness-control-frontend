@@ -39,7 +39,7 @@ export default function Layout() {
           color={text}
           _hover={{ textDecoration: 'none' }}
         >
-          FitForge
+          StayNFit
         </Heading>
 
         <Spacer />
